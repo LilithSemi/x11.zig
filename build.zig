@@ -33,6 +33,9 @@ pub fn build(b: *std.Build) void {
     const xml_dep = b.dependency("xml", .{ .target = target, .optimize = optimize });
     const xml_mod = xml_dep.module("xml");
 
+    const xml_host_dep = b.dependency("xml", .{ .target = b.graph.host, .optimize = optimize });
+    const xml_host_mod = xml_host_dep.module("xml");
+
     const gen_mod = b.createModule(.{
         .root_source_file = b.path("generator/main.zig"),
         .target = target,
@@ -47,7 +50,7 @@ pub fn build(b: *std.Build) void {
         .target = b.graph.host,
         .optimize = optimize,
     });
-    host_gen_mod.addImport("xml", xml_mod);
+    host_gen_mod.addImport("xml", xml_host_mod);
     const host_gen_exe = b.addExecutable(.{ .name = "x11-gen-host", .root_module = host_gen_mod });
     b.installArtifact(host_gen_exe);
 
