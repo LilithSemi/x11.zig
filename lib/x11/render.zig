@@ -1086,7 +1086,7 @@ test "drawGlyph: LSB=leftmost bit convention, in-bounds set/clear pixels, off-su
     defer r.destroySurface(surf);
 
     // row 0: only bit 0 (col 0, leftmost) set. row 7: only bit 7 (col 7) set.
-    var bits = [_]u8{0} ** 8;
+    var bits: [8]u8 = @splat(0);
     bits[0] = 0b00000001;
     bits[7] = 0b10000000;
     r.drawGlyph(surf, 0, 0, &bits, 8, 8, 0x00abcdef);

@@ -733,12 +733,12 @@ pub const Display = struct {
     /// keycodes min_keycode..max_keycode. Minimal by design (populated in init) -
     /// a real server / Lattice supplies the full map. Keycode K -> base index
     /// (K - min_keycode) * 2.
-    keymap: [(@as(u16, max_keycode) - min_keycode + 1) * 2]u32 = [_]u32{0} ** ((@as(u16, max_keycode) - min_keycode + 1) * 2),
+    keymap: [(@as(u16, max_keycode) - min_keycode + 1) * 2]u32 = @splat(0),
     /// Modifier map: 8 modifiers x up to 8 keycodes each, flat in wire order
     /// (Shift, Lock, Control, Mod1..Mod5). Only the first `8 * modmap_per`
     /// bytes are live; SetModifierMapping picks modmap_per (<=8) at runtime,
     /// so the backing buffer is sized for the largest legal per-modifier count.
-    modmap: [64]u8 = [_]u8{0} ** 64,
+    modmap: [64]u8 = @splat(0),
     /// Keycodes per modifier currently in `modmap` (GetModifierMapping's `per`).
     modmap_per: u8 = 2,
     /// Physical->logical pointer button map (GetPointerMapping/SetPointerMapping).
@@ -5027,7 +5027,7 @@ test "setModifierMapping: per=2 valid remap round-trips through modifierMapping/
     const gpa = std.testing.allocator;
     var d = try Display.init(gpa, 0x12a, 24, 0x21);
     defer d.deinit();
-    var codes = [_]u8{0} ** 16;
+    var codes: [16]u8 = @splat(0);
     codes[0] = 60; // Shift slot 0 moved to keycode 60
     codes[8] = 40; // Mod1 slot 0 (index 4*2=8) moved to keycode 40
     const status = try d.setModifierMapping(2, &codes);
@@ -5056,12 +5056,15 @@ test "setModifierMapping: out-of-range keycode, length mismatch, per=9 are BadVa
     const gpa = std.testing.allocator;
     var d = try Display.init(gpa, 0x12a, 24, 0x21);
     defer d.deinit();
-    var bad_range = [_]u8{0} ** 16;
+
+    var bad_range: [16]u8 = @splat(0);
     bad_range[0] = 3; // below min_keycode(8)
     try std.testing.expectError(error.BadValue, d.setModifierMapping(2, &bad_range));
+
     const wrong_len = [_]u8{ 1, 2, 3 }; // != 8*per
     try std.testing.expectError(error.BadValue, d.setModifierMapping(2, &wrong_len));
-    const per9 = [_]u8{0} ** 72;
+
+    const per9: [72]u8 = @splat(0);
     try std.testing.expectError(error.BadValue, d.setModifierMapping(9, &per9));
 }
 
@@ -5816,7 +5819,12 @@ test "draw ops: fillRect + clip, putImage, getImage + plane_mask, errors" {
     try std.testing.expectEqual(@as(u8, 0x00), gb.data[4]); // (1,0) untouched
 
     // PutImage a 2x2 block of 0x00445566 at (1,1); GetImage reads it back.
-    const block = [_]u8{ 0x66, 0x55, 0x44, 0x00 } ** 4; // 2x2 pixels
+    const block: [16]u8 = [_]u8{
+        0x66, 0x55, 0x44, 0x00,
+        0x66, 0x55, 0x44, 0x00,
+        0x66, 0x55, 0x44, 0x00,
+        0x66, 0x55, 0x44, 0x00,
+    }; // 2x2 pixels
     try d.putImage(0xA, 0x200, 2, 24, 2, 2, 1, 1, 0, &block);
     const gp = try d.getImage(0xA, 2, 1, 1, 2, 2, 0xffffffff);
     defer gpa.free(gp.data);

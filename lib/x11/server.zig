@@ -408,7 +408,7 @@ test "ServerConn incremental handshake then framing (no sockets)" {
     defer conn.out.deinit();
 
     // A minimal 12-byte little-endian SetupRequest: byte0=0x6c, proto 11.0, no auth.
-    var setup = [_]u8{0} ** 12;
+    var setup: [12]u8 = @splat(0);
     setup[0] = 0x6c;
     std.mem.writeInt(u16, setup[2..4], 11, .little); // protocol-major-version
     // name_len (6..8) and data_len (8..10) stay 0.

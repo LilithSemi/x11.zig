@@ -116,7 +116,7 @@ pub fn build(b: *std.Build) void {
     probe_mod.addImport("xkb", xkb_mod);
     const probe_exe = b.addExecutable(.{ .name = "x11-probe", .root_module = probe_mod });
     const run_probe = b.addRunArtifact(probe_exe);
-    if (b.args) |pa| run_probe.addArgs(pa);
+    run_probe.addPassthruArgs();
     b.step("run-probe", "Run live X server probe (needs Xvfb on :99)").dependOn(&run_probe.step);
 
     const server_mod = b.createModule(.{
@@ -128,7 +128,7 @@ pub fn build(b: *std.Build) void {
     server_mod.addImport("xproto", xproto_mod);
     const server_exe = b.addExecutable(.{ .name = "x11-server", .root_module = server_mod });
     const run_server = b.addRunArtifact(server_exe);
-    if (b.args) |pa| run_server.addArgs(pa);
+    run_server.addPassthruArgs();
     b.step("run-server", "Run the x11.zig server (default :77)").dependOn(&run_server.step);
 
     const check_mod = b.createModule(.{
@@ -140,7 +140,7 @@ pub fn build(b: *std.Build) void {
     check_mod.addImport("xproto", xproto_mod);
     const check_exe = b.addExecutable(.{ .name = "x11-server-check", .root_module = check_mod });
     const run_check = b.addRunArtifact(check_exe);
-    if (b.args) |pa| run_check.addArgs(pa);
+    run_check.addPassthruArgs();
     b.step("run-server-check", "Run the client check against our server").dependOn(&run_check.step);
 
     // The executables (probe, server, server-check) carry no unit tests, but

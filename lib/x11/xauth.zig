@@ -187,8 +187,8 @@ test "parseXauth matches display 0, ignores display 1" {
 
     // Two entries: display "0" with 0xAA cookie, display "1" with 0xBB cookie.
     var buf: [256]u8 = undefined;
-    const cookie0 = [_]u8{0xAA} ** 16;
-    const cookie1 = [_]u8{0xBB} ** 16;
+    const cookie0: [16]u8 = @splat(0xAA);
+    const cookie1: [16]u8 = @splat(0xBB);
     var p: usize = 0;
     p = writeXauthEntry(&buf, p, 0x0101, "localhost", "0", "MIT-MAGIC-COOKIE-1", &cookie0);
     p = writeXauthEntry(&buf, p, 0x0101, "localhost", "1", "MIT-MAGIC-COOKIE-1", &cookie1);
@@ -205,7 +205,7 @@ test "parseXauth returns null when no match" {
     const alloc = std.testing.allocator;
 
     var buf: [256]u8 = undefined;
-    const cookie = [_]u8{0xCC} ** 16;
+    const cookie: [16]u8 = @splat(0xCC);
     var p: usize = 0;
     p = writeXauthEntry(&buf, p, 0x0101, "localhost", "1", "MIT-MAGIC-COOKIE-1", &cookie);
 
@@ -217,7 +217,7 @@ test "parseXauth wildcard number matches any display" {
     const alloc = std.testing.allocator;
 
     var buf: [256]u8 = undefined;
-    const cookie = [_]u8{0xDD} ** 16;
+    const cookie: [16]u8 = @splat(0xDD);
     var p: usize = 0;
     // number="" -> wildcard
     p = writeXauthEntry(&buf, p, 0x0100, "", "", "MIT-MAGIC-COOKIE-1", &cookie);
@@ -245,7 +245,7 @@ test "parseXauth skips wrong-name entries" {
     const alloc = std.testing.allocator;
 
     var buf: [256]u8 = undefined;
-    const cookie = [_]u8{0xEE} ** 16;
+    const cookie: [16]u8 = @splat(0xEE);
     var p: usize = 0;
     // Entry with a different name, should not match
     p = writeXauthEntry(&buf, p, 0x0100, "", "0", "XDM-AUTHORIZATION-1", &cookie);
@@ -270,7 +270,7 @@ test "loadFromPath reads and matches a cookie for the display" {
     // again; std.ArrayList(u8) has no `.writer` in this Zig, so an
     // Io.Writer-based builder is not the natural fit here anyway.
     var buf: [256]u8 = undefined;
-    const cookie = [_]u8{0xAB} ** 16;
+    const cookie: [16]u8 = @splat(0xAB);
     const blob_len = writeXauthEntry(&buf, 0, 256, "host", "0", "MIT-MAGIC-COOKIE-1", &cookie);
     const blob = buf[0..blob_len];
 

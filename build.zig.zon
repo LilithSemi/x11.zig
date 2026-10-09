@@ -1,12 +1,12 @@
 .{
     .name = .x11,
     .version = "0.1.0",
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .fingerprint = 0x3220e7723bd7fc75,
     .dependencies = .{
         .xml = .{
-            .url = "git+https://github.com/ianprime0509/zig-xml.git#d73304c3d56d6331a0caca4d339607e7c740aab5",
-            .hash = "xml-0.2.0-ZTbP35V4AgA_pFiWGWiBILJK7ifCCvj7mbiGfyMcEi2K",
+            .url = "git+https://github.com/carlmontanari/zig-xml?ref=fix/no-deref-non-ptr#13934ee5fa8337523f8caae2f5de0263a67c70c3",
+            .hash = "xml-0.2.0-ZTbP35N4AgCLKY1YU0TFz0pRvLiGWnEWAoO6Ugjk-RRE",
         },
         .xcbproto = .{
             .url = "https://gitlab.com/freedesktop-sdk/mirrors/freedesktop/xorg/proto/xcbproto/-/archive/xcb-proto-1.17.0/xcbproto-xcb-proto-1.17.0.tar.gz",

@@ -494,7 +494,7 @@ pub fn encodeSetupReply(w: *std.Io.Writer, endian: std.builtin.Endian, p: SetupR
 
 test "encodeSetupRequest byte layout and padding" {
     const auth_name = "MIT-MAGIC-COOKIE-1"; // 18 bytes -> padded to 20
-    const auth_data = [_]u8{0xde} ** 16; // 16 bytes -> no extra pad
+    const auth_data: [16]u8 = @splat(0xde); // 16 bytes -> no extra pad
 
     var aw = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer aw.deinit();
@@ -780,7 +780,7 @@ pub fn eventCode(bytes: []const u8) u8 {
 test "encodeRequest aligned extra" {
     var aw = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer aw.deinit();
-    const extra = [_]u8{0xAA} ** 8;
+    const extra: [8]u8 = @splat(0xAA);
     try encodeRequest(&aw.writer, 98, 0, &extra);
     const buf = aw.writer.buffered();
     try std.testing.expectEqual(@as(usize, 12), buf.len);
@@ -794,7 +794,7 @@ test "encodeRequest aligned extra" {
 test "encodeRequest unaligned extra gets padded" {
     var aw = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer aw.deinit();
-    const extra = [_]u8{0xBB} ** 5;
+    const extra: [5]u8 = @splat(0xBB);
     try encodeRequest(&aw.writer, 98, 0, &extra);
     const buf = aw.writer.buffered();
     // 5 bytes padded to 8, plus 4-byte header = 12.
@@ -819,7 +819,7 @@ test "parseReplyHeader canned bytes" {
 }
 
 test "parseReplyHeader short buffer" {
-    const buf = [_]u8{1} ** 7;
+    const buf: [7]u8 = @splat(1);
     try std.testing.expectError(error.ShortReply, parseReplyHeader(&buf));
 }
 
@@ -839,7 +839,7 @@ test "parseError canned bytes" {
 }
 
 test "parseError short buffer" {
-    const buf = [_]u8{0} ** 31;
+    const buf: [31]u8 = @splat(0);
     try std.testing.expectError(error.ShortError, parseError(&buf));
 }
 
@@ -875,7 +875,7 @@ test "parseSetupReply failed status" {
 test "encodeRequest then read back length" {
     var aw = std.Io.Writer.Allocating.init(std.testing.allocator);
     defer aw.deinit();
-    const extra = [_]u8{0xCC} ** 3; // 3 -> padded to 4, +4 header = 8 bytes = 2 units
+    const extra: [3]u8 = @splat(0xCC); // 3 -> padded to 4, +4 header = 8 bytes = 2 units
     try encodeRequest(&aw.writer, 1, 7, &extra);
     const buf = aw.writer.buffered();
     try std.testing.expectEqual(@as(usize, 8), buf.len);

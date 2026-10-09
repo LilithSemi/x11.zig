@@ -591,7 +591,7 @@ fn dispatchRequest(conn: *x11.ServerConn, bytes: []const u8, display: *x11.Displ
                     .backing_pixel = a.attrs.backing_pixel,
                     .save_under = a.attrs.save_under,
                     .map_is_installed = (a.map_state == .viewable),
-                    .map_state = @intFromEnum(a.map_state),
+                    .map_state = @backingInt(a.map_state),
                     .override_redirect = a.attrs.override_redirect,
                     .colormap = a.attrs.colormap,
                     .all_event_masks = a.all_event_masks,
@@ -801,7 +801,7 @@ fn dispatchRequest(conn: *x11.ServerConn, bytes: []const u8, display: *x11.Displ
                 try w.writeAll(e.name);
             }
             const pad = padded - body_len;
-            if (pad > 0) try w.writeAll(([_]u8{0} ** 4)[0..pad]);
+            if (pad > 0) try w.writeAll((@as([4]u8, 0))[0..pad]);
         },
         .open_font => |r| display.openFont(r.fid, r.name, conn.client_id) catch |e| switch (e) {
             error.IdInUse => try xproto.encodeIDChoiceError(w, en, seq, .{ .bad_value = r.fid, .minor_opcode = 0, .major_opcode = opcode }),
@@ -869,7 +869,7 @@ fn dispatchRequest(conn: *x11.ServerConn, bytes: []const u8, display: *x11.Displ
                 written += 1;
             }
             const pad = padded - body_len;
-            if (pad > 0) try w.writeAll(([_]u8{0} ** 4)[0..pad]);
+            if (pad > 0) try w.writeAll((@as([4]u8, 0))[0..pad]);
         },
         .image_text8 => |r| display.imageText8(r.drawable, r.gc, r.x, r.y, r.string) catch |e| switch (e) {
             error.NoDrawable => try xproto.encodeDrawableError(w, en, seq, .{ .bad_value = r.drawable, .minor_opcode = 0, .major_opcode = opcode }),
@@ -1970,13 +1970,13 @@ test "handleRandr CreateMode: mints a fresh id, DestroyMode/AddOutputMode/Delete
     try std.testing.expectEqual(@as(u16, 900), m.height);
 
     // GetScreenResources now reports num_modes==8 (num_modes CARD16 @ [20..22]).
-    const res_req = [_]u8{0} ** 8;
+    const res_req: [8]u8 = @splat(0);
     try handleRandr(conn, 8, &res_req, &display, 3, &mux);
     try std.testing.expectEqual(@as(u16, 8), std.mem.readInt(u16, conn.pendingOut()[20..22], .little));
     conn.clearOut();
 
     // DestroyMode(mode_id2) removes it: num_modes back to 7.
-    var destroy_req = [_]u8{0} ** 8;
+    var destroy_req: [8]u8 = @splat(0);
     std.mem.writeInt(u32, destroy_req[4..8], mode_id2, .little);
     try handleRandr(conn, 17, &destroy_req, &display, 4, &mux);
     try std.testing.expectEqual(@as(usize, 0), conn.pendingOut().len); // no reply
@@ -2004,7 +2004,7 @@ test "handleRandr CreateMode: mints a fresh id, DestroyMode/AddOutputMode/Delete
     conn.clearOut();
 
     // AddOutputMode: wrong output -> BadOutput.
-    var add_req = [_]u8{0} ** 12;
+    var add_req: [12]u8 = @splat(0);
     std.mem.writeInt(u32, add_req[4..8], 0xdeadbeef, .little);
     std.mem.writeInt(u32, add_req[8..12], mode_id, .little);
     try handleRandr(conn, 18, &add_req, &display, 8, &mux);
@@ -2043,7 +2043,7 @@ test "handleRandr SetMonitor/DeleteMonitor/GetMonitors: replace-by-name, N-monit
 
     const atom_a = try display.atoms.intern(gpa, "MON_A", false);
     const atom_b = try display.atoms.intern(gpa, "MON_B", false);
-    const get_req = [_]u8{0} ** 9; // GetMonitors: window@[4..8] (unused), get_active@[8] (unused).
+    const get_req: [9]u8 = @splat(0); // GetMonitors: window@[4..8] (unused), get_active@[8] (unused).
 
     // SetMonitor(A, 800x600 @ (10,20), 1 output) -- no reply.
     var set_a: [36]u8 = std.mem.zeroes([36]u8);
@@ -2138,7 +2138,7 @@ test "handleRandr SetMonitor/DeleteMonitor/GetMonitors: replace-by-name, N-monit
     conn.clearOut();
 
     // DeleteMonitor(unknown) -> BadValue.
-    var del_req = [_]u8{0} ** 12;
+    var del_req: [12]u8 = @splat(0);
     std.mem.writeInt(u32, del_req[8..12], 0xdead, .little);
     try handleRandr(conn, 44, &del_req, &display, 8, &mux);
     {

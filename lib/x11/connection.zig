@@ -659,8 +659,17 @@ test "takeIncoming drains events first, then unclaimed errors" {
     // Nothing buffered -> null.
     try std.testing.expect(takeIncoming(&events, &pending_errors) == null);
 
-    try events.append(gpa, .{ .bytes = [_]u8{7} ** 32 });
-    try pending_errors.append(gpa, .{ .seq = 9, .err = .{ .code = 3, .sequence = 9, .bad_value = 0, .minor_opcode = 0, .major_opcode = 12 } });
+    try events.append(gpa, .{ .bytes = @as([32]u8, @splat(7)) });
+    try pending_errors.append(gpa, .{
+        .seq = 9,
+        .err = .{
+            .code = 3,
+            .sequence = 9,
+            .bad_value = 0,
+            .minor_opcode = 0,
+            .major_opcode = 12,
+        },
+    });
 
     // Event comes out first.
     const a = takeIncoming(&events, &pending_errors).?;

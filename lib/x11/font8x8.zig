@@ -122,11 +122,12 @@ pub const glyphs: [95][8]u8 = .{
 /// codes and anything above 0x7E) render blank rather than faulting -- text
 /// drawing must never error on an arbitrary byte from the wire.
 pub fn glyph(c: u8) [8]u8 {
-    if (c < first_char or c > last_char) return .{0} ** 8;
+    if (c < first_char or c > last_char) return @splat(0);
     return glyphs[c - first_char];
 }
 
-const blank: [8]u8 = .{0} ** 8;
+const blank: [8]u8 = @splat(0);
+
 /// A STABLE slice of glyph `c`'s 8 bytes (into the static table), or a static
 /// all-zero blank for out-of-range. Unlike glyph() (which returns a copy), this
 /// slice stays valid, so a FontProvider may hand it out as Glyph.bits.
